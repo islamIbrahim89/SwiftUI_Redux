@@ -10,8 +10,12 @@ import Combine
 
 // MARK: - Middleware
 class AuthenticationMiddleware {
-    let authService = AuthenticationService()
-    var cancellables = Set<AnyCancellable>()
+    private let authService: AuthenticationService
+    private var cancellables = Set<AnyCancellable>()
+    
+    init(authService: AuthenticationService = AuthenticationService()) {
+        self.authService = authService
+    }
     
     func handleMiddleware(state: AppState, action: Action, dispatch: @escaping Dispatcher) {
         switch action {
@@ -29,7 +33,7 @@ class AuthenticationMiddleware {
                     dispatch(OTPSentFailureAction(error: data.msg ?? ""))
                 })
                 .store(in: &cancellables)
-        
+            
         case let action as VerifyOTPAction:
             authService.verifyOTP(action.verifyOTP)
                 .sink(receiveCompletion: { completion in
@@ -44,7 +48,7 @@ class AuthenticationMiddleware {
                     dispatch(VerificationFailureAction(error: data.msg ?? ""))
                 })
                 .store(in: &cancellables)
-        
+            
         default:
             break
         }
